@@ -238,7 +238,14 @@ function todayIndex(){
 let TODAY = todayIndex();
 
 /* ---------- state ---------- */
-function blank(){ return { v:2, days:{}, plan:false, updatedAt:0 }; }
+function blank(){ return { v:3, days:{}, plan:false, updatedAt:0 }; }
+// v3: socket and switch tasks no longer name the room. Returns true if anything changed.
+function migrate(s){
+  if (!s || !s.days || (s.v || 0) >= 3) return false;
+  for (const k in s.days) for (const t of (s.days[k].tasks || []))
+    t.text = String(t.text).replace(/^Sockets: .+$/, "Socket").replace(/^Switches: .+$/, "Switch");
+  s.v = 3; return true;
+}
 let state = (() => {
   try {
     const s = JSON.parse(localStorage.getItem(LS_KEY));
@@ -284,6 +291,7 @@ function loadSeed(){
 (function(){
   const cfg = window.FIREBASE_CONFIG;
   if (!state.updatedAt && window.SEED){ const sd = loadSeed(); if (sd){ sd.updatedAt = 1; state = sd; } }
+  if (migrate(state)) save();
   if (!cfg || !cfg.apiKey || !window.firebase){ $("#syncNote").textContent = "Saved on this device only"; return; }
   try {
     firebase.initializeApp(cfg);
@@ -299,7 +307,8 @@ function loadSeed(){
       }
       if (!remote || !remote.days || remote.updatedAt === state.updatedAt) return;
       state = JSON.parse(JSON.stringify(remote));
-      try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){}
+      if (migrate(state)) save();
+      else { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){} }
       renderStats(); renderGarland(); renderMonths(); $("#planToggle").checked = !!state.plan;
       if (active && !document.activeElement.matches("#sheet input")) renderSheet();
       $("#syncNote").textContent = "Shared calendar, synced";
