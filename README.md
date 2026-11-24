@@ -13,9 +13,8 @@ Installable phone app (PWA) on GitHub Pages, shared between two phones via Fireb
    - iPhone: Safari → Share → Add to Home Screen.
    - Android: Chrome → ⋮ → Add to Home screen / Install app.
 
-The first phone to open it loads the starting tasks into Firestore; after that both phones share one calendar live.
+The app is one door holding a prioritised list of jobs. The first phone to open it saves the list to Firestore; after that both phones share it live.
 
 Notes
 - `CALENDAR_ID` in `config.js` is the only key to your list. Anyone with the site URL can read the code, so don't put anything private in tasks.
-- `seed.js` is scrambled so the tasks don't spoil. Don't decode it.
 - Works offline; changes sync when back online.
